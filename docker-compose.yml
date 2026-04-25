@@ -1,0 +1,129 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: matrix_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: matrix_user
+      MYSQL_PASSWORD: matrixpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    networks:
+      - matrix_network
+
+  hub:
+    build:
+      context: ./hub-core
+      dockerfile: ../docker/hub.Dockerfile
+    container_name: matrix_hub
+    restart: always
+    ports:
+      - "5050:5050"
+    environment:
+      - DB_HOST=db
+      - DB_USER=matrix_user
+      - DB_PASSWORD=matrixpassword
+      - DB_NAME=matrix_hub
+      - HUB_SECRET_KEY=shared_secret_key_123
+    depends_on:
+      - db
+    networks:
+      - matrix_network
+
+  oee:
+    build:
+      context: ./oee/matrix_oee_manual
+      dockerfile: ../../docker/oee.Dockerfile
+    container_name: matrix_oee
+    restart: always
+    ports:
+      - "5051:5000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=matrix_user
+      - DB_PASSWORD=matrixpassword
+      - DB_NAME=oee_db
+      - HUB_SECRET_KEY=shared_secret_key_123
+    depends_on:
+      - db
+    networks:
+      - matrix_network
+
+  inventario:
+    build:
+      context: ./inventario/internal_matrix
+      dockerfile: ../../docker/inventario.Dockerfile
+    container_name: matrix_inventario
+    restart: always
+    ports:
+      - "5052:5052"
+    environment:
+      - DB_HOST=db
+      - DB_USER=matrix_user
+      - DB_PASSWORD=matrixpassword
+      - DB_NAME=inventario_db
+      - HUB_SECRET_KEY=shared_secret_key_123
+    depends_on:
+      - db
+    networks:
+      - matrix_network
+
+  asistencia:
+    build:
+      context: ./asistencia
+      dockerfile: ../docker/asistencia.Dockerfile
+    container_name: matrix_asistencia
+    restart: always
+    ports:
+      - "5053:5053"
+    environment:
+      - DB_HOST=db
+      - DB_USER=matrix_user
+      - DB_PASSWORD=matrixpassword
+      - DB_NAME=asistencia_db
+      - HUB_SECRET_KEY=shared_secret_key_123
+    depends_on:
+      - db
+    networks:
+      - matrix_network
+
+  turnos_backend:
+    build:
+      context: ./turnero/backend
+      dockerfile: Dockerfile
+    container_name: matrix_turnos_backend
+    restart: always
+    ports:
+      - "5055:8000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=matrix_user
+      - DB_PASSWORD=matrixpassword
+      - DB_NAME=turnos_db
+      - HUB_SECRET_KEY=shared_secret_key_123
+    depends_on:
+      - db
+    networks:
+      - matrix_network
+
+  turnos_frontend:
+    build:
+      context: ./turnero/frontend
+      dockerfile: Dockerfile
+    container_name: matrix_turnos_frontend
+    restart: always
+    ports:
+      - "5054:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5055
+    depends_on:
+      - turnos_backend
+    networks:
+      - matrix_network
+
+networks:
+  matrix_network:
+    driver: bridge

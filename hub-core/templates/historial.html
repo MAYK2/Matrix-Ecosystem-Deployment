@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Historial - Matrix Flow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .row-dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .kpi-card {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .kpi-card h3 {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 1.2rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-nav glass-panel" style="padding: 1.5rem;">
+            <div class="logo">Matrix Flow - Reportes</div>
+            <a href="/" class="btn btn-outline" style="text-decoration: none;">Volver al POS (Ventas)</a>
+        </div>
+
+        <div class="row-dashboard glass-panel">
+            <div class="kpi-card">
+                <h3>Total Vendido (Hoy)</h3>
+                <div id="kpi-total" class="value">$0.00</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Operaciones (Hoy)</h3>
+                <div id="kpi-ops" class="value">0</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Ticket Promedio</h3>
+                <div id="kpi-ticket" class="value">$0.00</div>
+            </div>
+        </div>
+
+        <div class="glass-panel" style="padding: 1.5rem;">
+            <h2>Últimas Ventas</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>N° Ticket</th>
+                        <th>Fecha y Hora</th>
+                        <th>Medio de Pago</th>
+                        <th>Estado</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="historial-body">
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Cargando historial...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Fetch dashboard metrics
+        fetch('/api/reportes/hoy').then(r => r.json()).then(data => {
+            document.getElementById('kpi-total').textContent = '$' + data.total_vendido.toFixed(2);
+            document.getElementById('kpi-ops').textContent = data.cantidad_operaciones;
+            document.getElementById('kpi-ticket').textContent = '$' + data.ticket_promedio.toFixed(2);
+        }).catch(err => console.error("Error cargando dashboard", err));
+
+        // Fetch sales history
+        fetch('/api/reportes/historial').then(r => r.json()).then(data => {
+            const tbody = document.getElementById('historial-body');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay ventas registradas recientes.</td></tr>';
+                return;
+            }
+            data.forEach(v => {
+                const tr = document.createElement('tr');
+                const badgeClass = v.estado === 'completada' ? 'success' : 'danger';
+                tr.innerHTML = `
+                    <td>#${v.id.toString().padStart(6, '0')}</td>
+                    <td>${new Date(v.fecha).toLocaleString()}</td>
+                    <td style="text-transform: capitalize;">${v.medio_pago}</td>
+                    <td><span class="user-badge" style="background: var(--${badgeClass});">${v.estado}</span></td>
+                    <td style="font-weight: 600; color: var(--primary);">$${v.total.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }).catch(err => {
+            document.getElementById('historial-body').innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Error cargando historial</td></tr>';
+            console.error(err);
+        });
+    </script>
+</body>
+
+</html>

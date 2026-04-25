@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Flow - CRM Clientes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .crm-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .crm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            flex: 1;
+            max-width: 600px;
+        }
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        .client-card {
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .client-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        .client-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        .client-info {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .client-info span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--secondary);
+            color: white;
+            text-transform: uppercase;
+        }
+        .source-tag {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 0.6rem;
+            opacity: 0.6;
+        }
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            border-top: 1px solid var(--panel-border);
+            padding-top: 1rem;
+        }
+        .social-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .social-icon:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-view {
+            width: 100%;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            padding: 0.6rem;
+        }
+        .modal-large {
+            width: 600px !important;
+        }
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+        .detail-section h4 {
+            color: var(--primary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+        .detail-section p {
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+    <div class="pos-container">
+        <header class="glass-panel">
+            <div class="logo">Matrix Flow <span style="font-weight: 300; font-size: 0.9rem; margin-left: 0.5rem; color: var(--text-muted);">CRM Clientes</span></div>
+            <nav style="display: flex; gap: 1.5rem;">
+                <a href="/" style="color: var(--text-muted); text-decoration: none; font-weight: 600;">Punto de Venta</a>
+                <a href="/clientes" style="color: var(--primary); text-decoration: none; font-weight: 600;">Clientes & Leads</a>
+                <a href="/historial" style="color: var(--text-muted); text-decoration: none; font-weight: 600;">Historial</a>
+            </nav>
+            <div class="status">
+                <span class="user-badge">Admin Scraper</span>
+            </div>
+        </header>
+
+        <div class="crm-container">
+            <div class="crm-header">
+                <div class="search-filters">
+                    <input type="text" id="crmSearch" placeholder="Buscar por nombre, email o sector...">
+                </div>
+                <div class="stats-mini">
+                    <span id="totalLeads">0</span> Leads encontrados
+                </div>
+            </div>
+
+            <div id="clientGrid" class="client-grid">
+                <!-- Cards will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLE CLIENTE -->
+    <div id="modalDetalle" class="modal-overlay hidden">
+        <div class="modal glass-panel modal-large">
+            <h2 id="detNombre">Nombre de Empresa</h2>
+            <div class="modal-body">
+                <div class="detail-section">
+                    <h4>Sector / Rubro</h4>
+                    <p id="detSector">-</p>
+                </div>
+                <div class="detail-section">
+                    <h4>Descripción</h4>
+                    <p id="detDescripcion">Sin descripción disponible.</p>
+                </div>
+                <div class="detail-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <h4>Email</h4>
+                        <p id="detEmail">-</p>
+                    </div>
+                    <div>
+                        <h4>Teléfono</h4>
+                        <p id="detTelefono">-</p>
+                    </div>
+                </div>
+                <div class="detail-section">
+                    <h4>Ubicación</h4>
+                    <p id="detDireccion">-</p>
+                </div>
+                <div class="detail-section">
+                    <h4>Sitio Web</h4>
+                    <a id="detWeb" href="#" target="_blank" style="color: var(--primary);">Visitar sitio web</a>
+                </div>
+                <div class="social-links" id="detSocial">
+                    <!-- Icons injected here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="cerrarModal()" class="btn btn-secondary">Cerrar</button>
+                <button id="btnUsarPos" class="btn btn-primary">Usar en POS</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allClients = [];
+
+        async function loadClients(q = '') {
+            const res = await fetch(`/api/clientes/?q=${q}`);
+            allClients = await res.json();
+            renderGrid(allClients);
+        }
+
+        function renderGrid(clients) {
+            const grid = document.getElementById('clientGrid');
+            document.getElementById('totalLeads').textContent = clients.length;
+            
+            grid.innerHTML = clients.map(c => `
+                <div class="glass-panel client-card">
+                    <span class="source-tag">${c.fuente || 'Manual'}</span>
+                    <h3>${c.nombre}</h3>
+                    <div class="client-info">
+                        ${c.sector ? `<span><span class="tag">${c.sector}</span></span>` : ''}
+                        <span>📧 ${c.email || 'N/A'}</span>
+                        <span>📞 ${c.telefono || 'N/A'}</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); height: 3em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                        ${c.descripcion || 'Sin descripción adicional.'}
+                    </p>
+                    <button class="btn btn-outline btn-view" onclick="verDetalle(${c.id})">Ver Ficha Completa</button>
+                </div>
+            `).join('');
+        }
+
+        function verDetalle(id) {
+            const c = allClients.find(x => x.id === id);
+            if (!c) return;
+
+            document.getElementById('detNombre').textContent = c.nombre;
+            document.getElementById('detSector').textContent = c.sector || 'No especificado';
+            document.getElementById('detDescripcion').textContent = c.descripcion || 'Sin descripción disponible.';
+            document.getElementById('detEmail').textContent = c.email || 'No disponible';
+            document.getElementById('detTelefono').textContent = c.telefono || 'No disponible';
+            document.getElementById('detDireccion').textContent = c.direccion || 'No especificada';
+            
+            const webBtn = document.getElementById('detWeb');
+            if (c.web) {
+                webBtn.href = c.web;
+                webBtn.style.display = 'block';
+            } else {
+                webBtn.style.display = 'none';
+            }
+
+            const socialDiv = document.getElementById('detSocial');
+            socialDiv.innerHTML = '';
+            if (c.instagram) socialDiv.innerHTML += `<a href="https://${c.instagram}" target="_blank" class="social-icon" title="Instagram">IG</a>`;
+            if (c.linkedin) socialDiv.innerHTML += `<a href="https://${c.linkedin}" target="_blank" class="social-icon" title="LinkedIn">IN</a>`;
+
+            document.getElementById('btnUsarPos').onclick = () => {
+                window.location.href = `/?clientId=${c.id}`;
+            };
+
+            document.getElementById('modalDetalle').classList.remove('hidden');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalDetalle').classList.add('hidden');
+        }
+
+        document.getElementById('crmSearch').addEventListener('input', (e) => {
+            loadClients(e.target.value);
+        });
+
+        // Close modal on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') cerrarModal();
+        });
+
+        loadClients();
+    </script>
+</body>
+</html>

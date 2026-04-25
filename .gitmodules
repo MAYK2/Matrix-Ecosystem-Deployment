@@ -1,0 +1,12 @@
+[submodule "turnero"]
+	path = turnero
+	url = https://github.com/MAYK2/turnero.git
+[submodule "asistencia"]
+	path = asistencia
+	url = https://github.com/MAYK2/SistemaControlAsistencia.git
+[submodule "inventario"]
+	path = inventario
+	url = https://github.com/MAYK2/Matrix-Inventary.git
+[submodule "oee"]
+	path = oee
+	url = https://github.com/MAYK2/Sistema-OEE-.git

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Flow - POS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <div class="pos-container">
+        <!-- HEADER -->
+        <header class="glass-panel">
+            <div class="logo">Matrix Flow</div>
+            <nav style="display: flex; gap: 1.5rem;">
+                <a href="/" style="color: var(--primary); text-decoration: none; font-weight: 600;">Punto de Venta</a>
+                <a href="/clientes" style="color: var(--text-muted); text-decoration: none; font-weight: 600;">Clientes & Leads</a>
+                <a href="/historial" style="color: var(--text-muted); text-decoration: none; font-weight: 600;">Historial</a>
+            </nav>
+            <div class="status">
+                <span class="user-badge">Admin</span>
+                <span id="cajaStatus" class="caja-badge danger">Caja Cerrada</span>
+            </div>
+            <button id="btnAbrirCaja" class="btn btn-outline glow">Abrir Caja / Arqueo</button>
+        </header>
+
+        <div class="pos-grid">
+            <!-- MAIN PANEL: CART & SEARCH -->
+            <main class="glass-panel main-panel">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Buscar producto o escanear código (F2)"
+                        autocomplete="off">
+                    <div id="searchResults" class="search-results hidden glass-panel"></div>
+                </div>
+
+                <div class="cart-container">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Cód</th>
+                                <th>Descripción</th>
+                                <th>Cant</th>
+                                <th>Precio</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody">
+                            <!-- Items go here -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+
+            <!-- SIDE PANEL: TOTALS & PAYMENTS -->
+            <aside class="glass-panel side-panel">
+                <div class="client-section">
+                    <h3>Cliente (F3)</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <div class="search-bar-small" style="flex: 1;">
+                            <input type="text" id="clientInput" placeholder="Buscar cliente..." autocomplete="off">
+                            <input type="hidden" id="clientId" value="">
+                            <div id="clientResults" class="search-results hidden glass-panel"></div>
+                        </div>
+                        <button id="btnConsumidorFinal" class="btn btn-outline"
+                            style="padding: 0.5rem; font-size: 0.8rem;" title="Usar Consumidor Final">C. Final</button>
+                    </div>
+                </div>
+
+                <div class="totals-section">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotalDisplay">$0.00</span>
+                    </div>
+                    <div class="total-row discount">
+                        <span>Descuento:</span>
+                        <span id="discountDisplay">$0.00</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>TOTAL:</span>
+                        <span id="totalDisplay">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <h3>Medio de Pago</h3>
+                    <div class="payment-grid">
+                        <button class="btn-payment active" data-method="efectivo">Efectivo <span>(F4)</span></button>
+                        <button class="btn-payment" data-method="tarjeta">Tarjeta <span>(F5)</span></button>
+                        <button class="btn-payment" data-method="transferencia">Transfer. <span>(F6)</span></button>
+                        <button class="btn-payment" data-method="qr">MercadoPago QR <span>(F7)</span></button>
+                    </div>
+                </div>
+
+                <div class="action-section">
+                    <button id="btnCobrar" class="btn btn-primary pulse">COBRAR (Enter)</button>
+                    <button id="btnCancelar" class="btn btn-danger">Cancelar Venta (Esc)</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- MODAL DE COBRO EFECTIVO -->
+    <div id="modalCobro" class="modal-overlay hidden">
+        <div class="modal glass-panel">
+            <h2>Pago en Efectivo</h2>
+            <div class="modal-body">
+                <div class="amount-display">Total a Pagar: <span id="modalTotal">$0.00</span></div>
+                <div class="input-group">
+                    <label>Paga con:</label>
+                    <input type="number" id="montoEntregado" placeholder="0.00" step="0.01">
+                </div>
+                <div class="amount-display change-display">Vuelto: <span id="modalVuelto">$0.00</span></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnConfirmarCobro" class="btn btn-success">Confirmar (Enter)</button>
+                <button id="btnCerrarModal" class="btn btn-secondary">Atrás (Esc)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO BEEP PARA ESCÁNER -->
+    <audio id="beepSound" src="/static/sounds/beep.mp3" preload="auto"></audio>
+
+    <script src="/static/js/pos.js"></script>
+</body>
+
+</html>
